@@ -1,17 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <stdint.h>
 #include <assert.h>
-#include <string.h>
-
-struct heap {
-   int *data;
-   int size;
-   int elems;
-};
-void swap(int *a, int *b) {
-   int tmp = *a;
+#include "heap.h"
+void swap(void **a, void **b) {
+   void *tmp = *a;
    *a = *b;
    *b = tmp;
 }
@@ -24,13 +14,15 @@ void bubble_up(struct heap *h, int pos) {
    root = ((pos  + 1 ) / 2) - 1;
    if(root < 0)
       return;
-   if(h->data[pos] < h->data[root]) {
+   if(h->pfn(h->ctx,
+             h->data[pos],
+             h->data[root]) < 0) {
       swap(&h->data[pos],  &h->data[root]);
       bubble_up(h, root);
    }
 }
 
-void heap_insert(struct heap *h, int val) { 
+void heap_insert(struct heap *h, void *val) { 
    assert(h->size > h->elems);
    h->data[h->elems++] = val;
    bubble_up(h, h->elems-1);
@@ -42,7 +34,9 @@ void bubble_down(struct heap *h, int root) {
    int i;
    int min = root;
    for(i = 0; i < 2 && ixes[i] < h->elems; ++i) {
-      if(h->data[ixes[i]] < h->data[min]) {
+      if(h->pfn(h->ctx,
+                h->data[ixes[i]],
+                h->data[min]) < 0) {
          min = ixes[i];
       }
    }
@@ -52,8 +46,8 @@ void bubble_down(struct heap *h, int root) {
    }
 }
 
-int heap_remove(struct heap *h) { 
-   int rv;
+void* heap_remove(struct heap *h) { 
+   void *rv;
    assert(h->elems > 0);
    rv = h->data[0];
    h->data[0] = h->data[h->elems - 1];
@@ -62,30 +56,4 @@ int heap_remove(struct heap *h) {
    return rv;
 }
 
-int main(void) {
-   int prev, i,j;
-   int data[10];
-   struct heap h;
-   h.size = 10;
-   h.data = data;
-   h.elems = 0;
-   for(j = 0; j < 10; ++j) {
-      printf("starting...\n");
-      memset(data,0,sizeof(data));
-      assert(h.elems == 0);
-      for(i = 0; i < 10; ++i) {
-         int v = rand();
-         printf("\tadding %d\n", v);
-         heap_insert(&h, v);
-      }
-      assert(h.elems == 10);
-      prev = h.data[0];
-      for(i = 0; i < 10; ++i) {
-         int rv = heap_remove(&h); 
-         printf("%d\n", rv);
-         assert(prev <= rv);
-         prev = rv;
-      }
-   }
-   return 0;
-}
+
