@@ -1,7 +1,7 @@
 #ifndef HEAP_H
 #define HEAP_H
 struct heap {
-   void *data;
+   void **data;
    int size;
    int elems;
    void *ctx;
