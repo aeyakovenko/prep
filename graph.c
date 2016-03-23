@@ -178,6 +178,32 @@ void prims_msp_v2(struct node *nodes, struct node *msp, int sz) {
       prims_msp_v2(nodes, msp, sz);
    }
 }
+void floyd_warshall(struct node *nodes, int sz, int dists[sz][sz]) {
+   int j,k,i;
+   for(j = 0; j < sz; ++j) {
+      struct node *n = &nodes[j];
+      for(k = 0; k < sz; ++k) {
+         dists[n->id][k] = INT_MAX;
+      }
+      for(k = 0; k < n->nedges; ++k) {
+         struct edge *e = &n->edges[k];
+         dists[n->id][e->n->id] = e->weight;
+      }
+      dists[j][j] = 0;
+   }
+   for(k = 0; k < sz; ++k) {
+      //the key is that 'k' is the outer loop
+      //for each vertex update any of the pairs if there is a faster path through that vertex
+      for(i = 0; i < sz; ++i) {
+         for(j = 0; j < sz; ++j) {
+            if(dists[i][j] > dists[i][k] + dists[k][j]) {
+               dists[i][j] = dists[i][k] + dists[k][j];
+            }
+         }
+      }
+   }
+}
+
 int main(void) {
    int i;
    for(i = 0; i < 5; ++i) { 
